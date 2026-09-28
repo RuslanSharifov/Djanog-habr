@@ -1,11 +1,25 @@
-<h1>Authors</h1>
-
-{% for author in authors %}
-    <h2>
-        <a href="{% url 'author_articles' author.id %}">
-            {{ author.username }}
-        </a>
-    </h2>
-{% endfor %}
-
-<a href="{% url 'home' %}">Back</a>
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authors - DjangoHabr</title>
+    <link rel="stylesheet" href="{% static 'css/global.css' %}">
+</head>
+<body>
+<main class="page-container">
+    <h1>Authors</h1>
+    <div class="link-list">
+        {% for author in authors %}
+            <a class="link-card" href="{% url 'author_articles' author.id %}">
+                <h2>{{ author.username }}</h2>
+            </a>
+        {% empty %}
+            <div class="empty-state"><p>No authors yet.</p></div>
+        {% endfor %}
+    </div>
+    <a class="back-link" href="{% url 'home' %}">Back</a>
+</main>
+</body>
+</html>
