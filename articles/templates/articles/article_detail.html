@@ -1,17 +1,27 @@
-<div class="article-actions">
-
-    <form method="post" action="{% url 'article_like' article.id %}">
-        {% csrf_token %}
-        <button type="submit" class="action-button like-button">
-            ❤️ Like
-        </button>
-    </form>
-
-    <form method="post" action="{% url 'article_dislike' article.id %}">
-        {% csrf_token %}
-        <button type="submit" class="action-button dislike-button">
-            👎 Dislike
-        </button>
-    </form>
-
-</div>
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Article - DjangoHabr</title>
+    <link rel="stylesheet" href="{% static 'css/article_detail.css' %}">
+</head>
+<body>
+<main class="page-container">
+    <a class="back-link" href="{% url 'home' %}">← Back to articles</a>
+    <section class="article-detail">
+        <div class="article-actions">
+            <form method="post" action="{% url 'article_like' article.id %}">
+                {% csrf_token %}
+                <button type="submit" class="action-button like-button">❤️ Like</button>
+            </form>
+            <form method="post" action="{% url 'article_dislike' article.id %}">
+                {% csrf_token %}
+                <button type="submit" class="action-button dislike-button">👎 Dislike</button>
+            </form>
+        </div>
+    </section>
+</main>
+</body>
+</html>
