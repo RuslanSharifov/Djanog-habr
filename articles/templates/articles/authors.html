@@ -1,0 +1,11 @@
+<h1>Authors</h1>
+
+{% for author in authors %}
+    <h2>
+        <a href="{% url 'author_articles' author.id %}">
+            {{ author.username }}
+        </a>
+    </h2>
+{% endfor %}
+
+<a href="{% url 'home' %}">Back</a>

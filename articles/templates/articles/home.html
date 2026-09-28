@@ -1,0 +1,446 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>DjangoHabr</title>
+
+    <link rel="stylesheet" href="{% static 'css/home.css' %}">
+</head>
+
+<body>
+
+<header class="header">
+
+    <div class="header-inner">
+
+        <a href="{% url 'home' %}" class="logo">
+            DjangoHabr
+        </a>
+
+        <nav class="nav">
+
+            <a href="{% url 'home' %}">
+                Articles
+            </a>
+
+            <a href="{% url 'popular' %}">
+                Popular
+            </a>
+
+            <a href="{% url 'categories' %}">
+                Categories
+            </a>
+
+            <a href="{% url 'authors' %}">
+                Authors
+            </a>
+
+            {% if user.is_authenticated %}
+                <a href="{% url 'favorites' %}">
+                    Favorites
+                </a>
+            {% endif %}
+
+        </nav>
+
+        <div class="auth-links">
+
+            {% if user.is_authenticated %}
+
+                <span class="username">
+                    {{ user.username }}
+                </span>
+
+                <a href="{% url 'logout' %}" class="logout-link">
+                    Logout
+                </a>
+
+            {% else %}
+
+                <a href="{% url 'login' %}">
+                    Login
+                </a>
+
+                <a href="{% url 'register' %}" class="register-link">
+                    Register
+                </a>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</header>
+
+
+<main class="main-container">
+
+
+    <!-- HERO -->
+
+    <section class="hero">
+
+        <div class="hero-content">
+
+            <span class="hero-label">
+                DJANGOHABR
+            </span>
+
+            <h1>
+                Share knowledge.<br>
+                Build the future.
+            </h1>
+
+            <p>
+                Discover articles, share your knowledge and connect
+                with developers around the world.
+            </p>
+
+            {% if user.is_authenticated %}
+
+                <a href="{% url 'article_create' %}" class="hero-button">
+                    Create article
+                </a>
+
+            {% else %}
+
+                <a href="{% url 'register' %}" class="hero-button">
+                    Join the community
+                </a>
+
+            {% endif %}
+
+        </div>
+
+    </section>
+
+
+    <div class="content-layout">
+
+
+        <!-- ARTICLES -->
+
+        <section class="articles-section">
+
+            <div class="section-header">
+
+                <div>
+                    <span class="section-label">
+                        LATEST
+                    </span>
+
+                    <h2>
+                        Latest articles
+                    </h2>
+                </div>
+
+                <a href="{% url 'home' %}">
+                    View all
+                </a>
+
+            </div>
+
+
+            {% for article in articles %}
+
+                <article class="article-card">
+
+
+                    {% if article.image %}
+
+                        <a href="{% url 'article_detail' article.id %}"
+                           class="article-image">
+
+                            <img
+                                src="{{ article.image.url }}"
+                                alt="{{ article.title }}"
+                            >
+
+                        </a>
+
+                    {% endif %}
+
+
+                    <div class="article-content">
+
+
+                        <div class="article-meta">
+
+                            <a href="{% url 'category_articles' article.category.id %}"
+                               class="category">
+
+                                {{ article.category.name }}
+
+                            </a>
+
+                            <span class="date">
+                                {{ article.created_at|date:"M d, Y" }}
+                            </span>
+
+                        </div>
+
+
+                        <h3>
+
+                            <a href="{% url 'article_detail' article.id %}">
+                                {{ article.title }}
+                            </a>
+
+                        </h3>
+
+
+                        <p class="article-excerpt">
+
+                            {{ article.text|truncatewords:30 }}
+
+                        </p>
+
+
+                        <div class="article-footer">
+
+
+                        {% if article.author %}
+
+                            <a
+                                href="{% url 'author_articles' article.author.id %}"
+                                class="author"
+                            >
+
+                                <div class="author-avatar">
+                                    {{ article.author.username|first|upper }}
+                                </div>
+
+                                <span>
+                                    {{ article.author.username }}
+                                </span>
+
+                            </a>
+
+                        {% else %}
+
+                            <div class="author">
+                                <div class="author-avatar">
+                                    ?
+                                </div>
+
+                                    <span>
+                                        Unknown author
+                                    </span>
+                                 </div>
+
+                            {% endif %}
+
+
+                            <div class="article-stats">
+
+                                <span>
+                                    ♡
+                                </span>
+
+                                <span>
+                                    ★
+                                </span>
+
+                            </div>
+
+
+                        </div>
+
+
+                    </div>
+
+                </article>
+
+
+            {% empty %}
+
+                <div class="empty-state">
+
+                    <h3>
+                        No articles yet
+                    </h3>
+
+                    <p>
+                        Be the first person to create an article.
+                    </p>
+
+                    {% if user.is_authenticated %}
+
+                        <a href="{% url 'article_create' %}">
+                            Create article
+                        </a>
+
+                    {% else %}
+
+                        <a href="{% url 'register' %}">
+                            Create account
+                        </a>
+
+                    {% endif %}
+
+                </div>
+
+            {% endfor %}
+
+        </section>
+
+
+
+        <!-- SIDEBAR -->
+
+        <aside class="sidebar">
+
+
+            <!-- CATEGORIES -->
+
+            <div class="sidebar-card">
+
+                <div class="sidebar-header">
+
+                    <h3>
+                        Categories
+                    </h3>
+
+                    <a href="{% url 'categories' %}">
+                        View all
+                    </a>
+
+                </div>
+
+
+                <div class="categories-list">
+
+                    {% for category in categories %}
+
+                        <a
+                            href="{% url 'category_articles' category.id %}"
+                            class="category-item"
+                        >
+
+                            <span>
+                                {{ category.name }}
+                            </span>
+
+                            <span>
+                                →
+                            </span>
+
+                        </a>
+
+                    {% empty %}
+
+                        <p>
+                            No categories yet.
+                        </p>
+
+                    {% endfor %}
+
+                </div>
+
+            </div>
+
+
+
+            <!-- POPULAR -->
+
+            <div class="sidebar-card">
+
+                <div class="sidebar-header">
+
+                    <h3>
+                        Popular
+                    </h3>
+
+                    <a href="{% url 'popular' %}">
+                        View all
+                    </a>
+
+                </div>
+
+
+                <div class="popular-list">
+
+                    {% for article in popular_articles %}
+
+                        <a
+                            href="{% url 'article_detail' article.id %}"
+                            class="popular-item"
+                        >
+
+                            <span class="popular-title">
+                                {{ article.title }}
+                            </span>
+
+                            <span class="popular-rating">
+                                ★ {{ article.average_rating|floatformat:1 }}
+                            </span>
+
+                        </a>
+
+                    {% empty %}
+
+                        <p>
+                            No popular articles yet.
+                        </p>
+
+                    {% endfor %}
+
+                </div>
+
+            </div>
+
+
+        </aside>
+
+
+    </div>
+
+</main>
+
+
+<footer class="footer">
+
+    <div class="footer-inner">
+
+        <div>
+            <strong>
+                DjangoHabr
+            </strong>
+
+            <p>
+                A community for developers.
+            </p>
+        </div>
+
+
+        <div class="footer-links">
+
+            <a href="{% url 'home' %}">
+                Articles
+            </a>
+
+            <a href="{% url 'categories' %}">
+                Categories
+            </a>
+
+            <a href="{% url 'authors' %}">
+                Authors
+            </a>
+
+            <a href="{% url 'popular' %}">
+                Popular
+            </a>
+
+        </div>
+
+    </div>
+
+</footer>
+
+</body>
+</html>

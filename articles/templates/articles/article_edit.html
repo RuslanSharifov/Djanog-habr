@@ -1,0 +1,10 @@
+<h1>Popular Articles</h1>
+
+{% for article in articles %}
+    <h2>{{ article.title }}</h2>
+    <p>{{ article.text|truncatewords:30 }}</p>
+{% empty %}
+    <p>No popular articles.</p>
+{% endfor %}
+
+<a href="{% url 'home' %}">Back</a>

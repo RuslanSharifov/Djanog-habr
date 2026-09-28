@@ -1,0 +1,48 @@
+
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Create Account</title>
+
+    <link rel="stylesheet" href="{% static 'css/register.css' %}">
+</head>
+
+<body>
+
+<div class="page">
+
+    <div class="register-card">
+
+        <div class="header">
+            <h1>Create account</h1>
+            <p>Join our community today</p>
+        </div>
+
+        <form method="post">
+
+            {% csrf_token %}
+
+            {{ form.as_p }}
+
+            <button type="submit">
+                Create account
+            </button>
+
+        </form>
+
+        <div class="footer">
+            <span>Already have an account?</span>
+            <a href="/login">Login</a>
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>

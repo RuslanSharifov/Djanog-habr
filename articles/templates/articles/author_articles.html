@@ -1,0 +1,10 @@
+<h1>{{ author.username }}'s Articles</h1>
+
+{% for article in articles %}
+    <h2>{{ article.title }}</h2>
+    <p>{{ article.text|truncatewords:30 }}</p>
+{% empty %}
+    <p>No articles.</p>
+{% endfor %}
+
+<a href="{% url 'authors' %}">Back to Authors</a>

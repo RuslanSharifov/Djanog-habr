@@ -1,0 +1,10 @@
+<h1>My Favorites</h1>
+
+{% for favorite in favorites %}
+    <h2>{{ favorite.article.title }}</h2>
+    <p>{{ favorite.article.text|truncatewords:30 }}</p>
+{% empty %}
+    <p>You don't have any favorite articles.</p>
+{% endfor %}
+
+<a href="{% url 'home' %}">Back</a>

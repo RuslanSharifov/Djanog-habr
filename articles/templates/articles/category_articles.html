@@ -1,0 +1,10 @@
+<h1>{{ category.name }}</h1>
+
+{% for article in articles %}
+    <h2>{{ article.title }}</h2>
+    <p>{{ article.text|truncatewords:30 }}</p>
+{% empty %}
+    <p>No articles in this category.</p>
+{% endfor %}
+
+<a href="{% url 'categories' %}">Back to Categories</a>
