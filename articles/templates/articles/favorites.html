@@ -1,10 +1,26 @@
-<h1>My Favorites</h1>
-
-{% for favorite in favorites %}
-    <h2>{{ favorite.article.title }}</h2>
-    <p>{{ favorite.article.text|truncatewords:30 }}</p>
-{% empty %}
-    <p>You don't have any favorite articles.</p>
-{% endfor %}
-
-<a href="{% url 'home' %}">Back</a>
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Favorites - DjangoHabr</title>
+    <link rel="stylesheet" href="{% static 'css/global.css' %}">
+</head>
+<body>
+<main class="page-container">
+    <h1>My Favorites</h1>
+    <div class="article-list">
+        {% for favorite in favorites %}
+            <article class="article-item">
+                <h2>{{ favorite.article.title }}</h2>
+                <p>{{ favorite.article.text|truncatewords:30 }}</p>
+            </article>
+        {% empty %}
+            <div class="empty-state"><p>You don't have any favorite articles.</p></div>
+        {% endfor %}
+    </div>
+    <a class="back-link" href="{% url 'home' %}">Back</a>
+</main>
+</body>
+</html>
