@@ -1,0 +1,41 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Article - DjangoHabr</title>
+
+    <link rel="stylesheet" href="{% static 'css/global.css' %}">
+</head>
+
+<body>
+
+<div class="page-container">
+
+    <a href="{% url 'home' %}" class="back-link">
+        ← Back to articles
+    </a>
+
+    <div class="form-card">
+
+        <h1>Create Article</h1>
+        <p>Create your article and submit it for approval.</p>
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            {{ form.as_p }}
+
+            <button type="submit" class="action-button">
+                Submit Article
+            </button>
+        </form>
+
+    </div>
+
+</div>
+
+</body>
+</html>
