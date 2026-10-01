@@ -493,7 +493,7 @@ def remove_admin(request, user_id):
     target = get_object_or_404(User, id=user_id)
 
     if request.method == 'POST':
-        target.groups.filter(name='Admin').delete()
+        admin_group = Group.objects.filter(name='Admin').first()\n        if admin_group:\n            target.groups.remove(admin_group)
         messages.success(
             request,
             f'{target.username} is no longer an Admin.'
