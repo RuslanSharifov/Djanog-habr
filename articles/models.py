@@ -1,3 +1,4 @@
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 
@@ -94,7 +95,12 @@ class Rating(models.Model):
         on_delete=models.CASCADE
     )
 
-    value = models.PositiveIntegerField()
+    value = models.PositiveIntegerField(
+        validators=[
+            MinValueValidator(1),
+            MaxValueValidator(5),
+        ]
+    )
 
     class Meta:
         unique_together = ('user', 'article')
