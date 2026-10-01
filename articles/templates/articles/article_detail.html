@@ -4,24 +4,155 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Article - DjangoHabr</title>
+    <title>{{ article.title }} - DjangoHabr</title>
+    <link rel="stylesheet" href="{% static 'css/global.css' %}">
     <link rel="stylesheet" href="{% static 'css/article_detail.css' %}">
 </head>
 <body>
-<main class="page-container">
+<header class="site-header">
+    <div class="header-inner">
+        <a class="brand" href="{% url 'home' %}">DjangoHabr</a>
+
+        <nav class="detail-nav">
+            <a href="{% url 'home' %}">Articles</a>
+            <a href="{% url 'popular' %}">Popular</a>
+            {% if user.is_authenticated %}
+                <a href="{% url 'favorites' %}">Favorites</a>
+            {% endif %}
+            {% if user.is_authenticated and user.is_superuser or user.is_authenticated and user.groups.all %}
+                <a href="{% url 'admin_dashboard' %}">Management</a>
+            {% endif %}
+        </nav>
+    </div>
+</header>
+
+<main class="detail-container">
     <a class="back-link" href="{% url 'home' %}">← Back to articles</a>
-    <section class="article-detail">
-        <div class="article-actions">
-            <form method="post" action="{% url 'article_like' article.id %}">
-                {% csrf_token %}
-                <button type="submit" class="action-button like-button">❤️ Like</button>
-            </form>
-            <form method="post" action="{% url 'article_dislike' article.id %}">
-                {% csrf_token %}
-                <button type="submit" class="action-button dislike-button">👎 Dislike</button>
-            </form>
+
+    {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <div class="message {{ message.tags }}">{{ message }}</div>
+            {% endfor %}
         </div>
-    </section>
+    {% endif %}
+
+    {% if not article.is_published %}
+        <div class="pending-banner">
+            This article is not published yet. It is waiting for admin approval.
+        </div>
+    {% endif %}
+
+    <article class="article-detail">
+        {% if article.image %}
+            <div class="article-cover">
+                <img src="{{ article.image.url }}" alt="{{ article.title }}">
+            </div>
+        {% endif %}
+
+        <div class="article-header">
+            <div class="article-meta">
+                <a href="{% url 'category_articles' article.category.id %}">
+                    {{ article.category.name }}
+                </a>
+                <span>{{ article.created_at|date:"M d, Y" }}</span>
+            </div>
+
+            <h1>{{ article.title }}</h1>
+
+            <div class="article-author">
+                <span class="author-avatar">
+                    {{ article.author.username|first|upper }}
+                </span>
+                <span>By {{ article.author.username }}</span>
+            </div>
+        </div>
+
+        <div class="article-body">
+            {{ article.text|linebreaks }}
+        </div>
+
+        <div class="article-stats">
+            <div>
+                <strong>{{ article.like_count|default:0 }}</strong>
+                <span>Likes</span>
+            </div>
+            <div>
+                <strong>{{ article.dislike_count|default:0 }}</strong>
+                <span>Dislikes</span>
+            </div>
+            <div>
+                <strong>{{ article.average_rating|default:0|floatformat:1 }}</strong>
+                <span>Rating</span>
+            </div>
+            <div>
+                <strong>{{ article.rating_count|default:0 }}</strong>
+                <span>Votes</span>
+            </div>
+        </div>
+
+        {% if article.is_published %}
+            <div class="article-actions">
+                {% if user.is_authenticated %}
+                    <form method="post" action="{% url 'article_like' article.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="action-button like-button {% if user_liked %}active{% endif %}">
+                            {% if user_liked %}♥ Liked{% else %}♡ Like{% endif %}
+                        </button>
+                    </form>
+
+                    <form method="post" action="{% url 'article_dislike' article.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="action-button dislike-button {% if user_disliked %}active{% endif %}">
+                            {% if user_disliked %}👎 Disliked{% else %}👎 Dislike{% endif %}
+                        </button>
+                    </form>
+
+                    <form method="post" action="{% url 'article_favorite' article.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="action-button favorite-button {% if user_favorite %}active{% endif %}">
+                            {% if user_favorite %}★ Saved{% else %}☆ Save{% endif %}
+                        </button>
+                    </form>
+                {% else %}
+                    <a class="action-button" href="{% url 'login' %}?next={{ request.path }}">Log in to interact</a>
+                {% endif %}
+            </div>
+
+            <section class="rating-section">
+                <h2>Rate this article</h2>
+                {% if user.is_authenticated %}
+                    <form method="post" action="{% url 'article_rate' article.id %}" class="rating-form">
+                        {% csrf_token %}
+                        {% for value in "12345" %}
+                            <button
+                                type="submit"
+                                name="value"
+                                value="{{ value }}"
+                                class="rating-star {% if user_rating|stringformat:'s' == value %}selected{% endif %}"
+                                aria-label="Rate {{ value }} out of 5"
+                            >★</button>
+                        {% endfor %}
+                    </form>
+                    {% if user_rating %}
+                        <p>Your rating: {{ user_rating }}/5</p>
+                    {% endif %}
+                {% else %}
+                    <p><a href="{% url 'login' %}?next={{ request.path }}">Log in</a> to rate this article.</p>
+                {% endif %}
+            </section>
+        {% endif %}
+
+        {% if user.is_authenticated and user == article.author %}
+            <div class="owner-actions">
+                <a class="secondary-button" href="{% url 'article_edit' article.id %}">Edit article</a>
+                <form method="post" action="{% url 'article_delete' article.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="danger-button">Delete</button>
+                </form>
+            </div>
+        {% endif %}
+    </article>
 </main>
 </body>
 </html>
