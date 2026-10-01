@@ -1,41 +1,71 @@
 {% load static %}
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Article - DjangoHabr</title>
-
+    <title>{% if is_edit %}Edit{% else %}Create{% endif %} Article - DjangoHabr</title>
     <link rel="stylesheet" href="{% static 'css/global.css' %}">
+    <link rel="stylesheet" href="{% static 'css/article_detail.css' %}">
 </head>
-
 <body>
+<header class="site-header">
+    <div class="header-inner">
+        <a class="brand" href="{% url 'home' %}">DjangoHabr</a>
+        <a href="{% url 'home' %}" class="back-link">← Back to articles</a>
+    </div>
+</header>
 
-<div class="page-container">
+<main class="form-container">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="message {{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
 
-    <a href="{% url 'home' %}" class="back-link">
-        ← Back to articles
-    </a>
+    <section class="form-card">
+        <div class="form-heading">
+            <span class="eyebrow">DJANGOHABR</span>
+            <h1>{% if is_edit %}Edit your article{% else %}Create a new article{% endif %}</h1>
+            <p>
+                {% if is_edit %}
+                    Update your article. After editing, it will be sent for approval again.
+                {% else %}
+                    Write something useful for the developer community. Your article will be reviewed before publication.
+                {% endif %}
+            </p>
+        </div>
 
-    <div class="form-card">
-
-        <h1>Create Article</h1>
-        <p>Create your article and submit it for approval.</p>
-
-        <form method="post" enctype="multipart/form-data">
+        <form method="post" enctype="multipart/form-data" class="article-form">
             {% csrf_token %}
 
-            {{ form.as_p }}
+            {% for field in form %}
+                <div class="form-field">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}
+                        <small>{{ field.help_text }}</small>
+                    {% endif %}
+                    {% for error in field.errors %}
+                        <div class="field-error">{{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
 
-            <button type="submit" class="action-button">
-                Submit Article
-            </button>
+            {% if form.non_field_errors %}
+                <div class="field-error">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            <div class="form-actions">
+                <a href="{% if article %}{% url 'article_detail' article.id %}{% else %}{% url 'home' %}{% endif %}" class="secondary-button">Cancel</a>
+                <button type="submit" class="primary-button">
+                    {% if is_edit %}Save changes{% else %}Submit for approval{% endif %}
+                </button>
+            </div>
         </form>
-
-    </div>
-
-</div>
-
+    </section>
+</main>
 </body>
 </html>
