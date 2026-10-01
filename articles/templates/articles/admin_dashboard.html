@@ -1,0 +1,40 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Management - DjangoHabr</title>
+<link rel="stylesheet" href="{% static 'css/global.css' %}">
+<link rel="stylesheet" href="{% static 'css/admin.css' %}">
+</head>
+<body>
+<header class="management-header"><div class="management-inner">
+<a href="{% url 'home' %}" class="brand">DjangoHabr</a>
+<nav><a href="{% url 'admin_dashboard' %}">Articles</a><a href="{% url 'admin_users' %}">Users</a><a href="/admin/">Django Admin</a><a href="{% url 'home' %}">Back to site</a></nav>
+</div></header>
+<main class="management-container">
+{% if messages %}<div class="messages">{% for message in messages %}<div class="message {{ message.tags }}">{{ message }}</div>{% endfor %}</div>{% endif %}
+<div class="management-heading"><div><span class="eyebrow">MANAGEMENT</span><h1>Moderation dashboard</h1><p>Review submitted articles and manage the community.</p></div><span class="role-badge">{% if is_super_admin %}Super Admin{% else %}Admin{% endif %}</span></div>
+<section class="stats-grid">
+<div class="stat-card"><strong>{{ pending_articles|length }}</strong><span>Pending articles</span></div>
+<div class="stat-card"><strong>{{ users_count }}</strong><span>Total users</span></div>
+<div class="stat-card"><strong>{{ blocked_count }}</strong><span>Blocked users</span></div>
+<div class="stat-card"><strong>{{ admin_count }}</strong><span>Admins</span></div>
+</section>
+<section class="management-card">
+<div class="card-heading"><h2>Articles waiting for approval</h2><p>Only approved articles are visible on the public home page.</p></div>
+<div class="table-wrap"><table class="management-table">
+<thead><tr><th>Article</th><th>Author</th><th>Category</th><th>Submitted</th><th>Actions</th></tr></thead>
+<tbody>
+{% for article in pending_articles %}
+<tr><td><a href="{% url 'article_detail' article.id %}" class="table-title">{{ article.title }}</a></td><td>{{ article.author.username }}</td><td>{{ article.category.name }}</td><td>{{ article.created_at|date:"M d, Y H:i" }}</td>
+<td class="table-actions">
+<form method="post" action="{% url 'approve_article' article.id %}">{% csrf_token %}<button class="approve-button" type="submit">Approve</button></form>
+<form method="post" action="{% url 'reject_article' article.id %}">{% csrf_token %}<button class="reject-button" type="submit">Keep pending</button></form>
+</td></tr>
+{% empty %}<tr><td colspan="5" class="empty-cell">No articles are waiting for approval.</td></tr>{% endfor %}
+</tbody></table></div>
+</section>
+</main>
+</body>
+</html>
