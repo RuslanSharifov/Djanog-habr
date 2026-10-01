@@ -1,0 +1,5 @@
+Super Admin və Admin rolları, admin təyin etmə və bloklama yoxdur.
+Məqalə detal səhifəsi məqaləni göstərmir, yalnız Like və Dislike düymələri var.
+Reytinq vermək və seçilmişlərə əlavə etmək mümkün deyil.
+Adminin məqaləni təsdiqləyəcəyi səhifə yoxdur.
+

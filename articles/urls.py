@@ -45,6 +45,13 @@ urlpatterns = [
         name='article_delete'
     ),
 
+
+    path(
+        'article/<int:article_id>/favorite/',
+        views.article_favorite,
+        name='article_favorite'
+    ),
+
     path(
         'popular/',
         views.popular,
@@ -80,4 +87,38 @@ urlpatterns = [
         views.favorites,
         name='favorites'
     ),
+
+    path(
+        'management/',
+        views.management,
+        name='management'
+    ),
+
+    path(
+        'management/articles/<int:article_id>/toggle-publish/',
+        views.toggle_article_publish,
+        name='toggle_article_publish'
+    ),
+
+    path(
+        'management/admins/',
+        views.admin_management,
+        name='admin_management'
+    ),
+
+    path(
+        'management/admins/<int:user_id>/add/',
+        views.make_admin,
+        name='make_admin'
+    ),
+
+    path(
+        'management/admins/<int:user_id>/remove/',
+        views.remove_admin,
+        name='remove_admin'
+    ),
+
+
+
+
 ]

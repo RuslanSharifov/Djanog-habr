@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            color: #1f2937;
+        }
+
+        .management-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 24px;
+        }
+
+        .page-header {
+            margin-bottom: 30px;
+        }
+
+        .page-header h1 {
+            margin: 0 0 8px;
+            font-size: 32px;
+            color: #111827;
+        }
+
+        .page-header p {
+            margin: 0;
+            color: #6b7280;
+        }
+
+        .articles-section {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.06);
+        }
+
+        .articles-section h2 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 22px;
+        }
+
+        .article-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 25px;
+            padding: 20px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .article-card:last-child {
+            border-bottom: none;
+        }
+
+        .article-info {
+            flex: 1;
+        }
+
+        .article-info h3 {
+            margin: 0 0 10px;
+            font-size: 19px;
+            color: #111827;
+        }
+
+        .article-info p {
+            margin: 5px 0;
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .status.active {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .status.inactive {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .article-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .article-actions form {
+            margin: 0;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 40px;
+            padding: 0 15px;
+            border-radius: 8px;
+            border: none;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: 0.2s ease;
+        }
+
+        .btn-view {
+            background: #eef2ff;
+            color: #4338ca;
+        }
+
+        .btn-view:hover {
+            background: #e0e7ff;
+        }
+
+        .btn-activate {
+            background: #16a34a;
+            color: white;
+        }
+
+        .btn-activate:hover {
+            background: #15803d;
+        }
+
+        .btn-deactivate {
+            background: #dc2626;
+            color: white;
+        }
+
+        .btn-deactivate:hover {
+            background: #b91c1c;
+        }
+
+        .empty-message {
+            padding: 40px 20px;
+            text-align: center;
+            color: #6b7280;
+        }
+
+        @media (max-width: 750px) {
+            .management-container {
+                margin: 20px auto;
+                padding: 0 15px;
+            }
+
+            .article-card {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .article-actions {
+                width: 100%;
+            }
+
+            .article-actions .btn {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Admin Panel</h1>
+
+    <p>
+        Welcome,
+        <strong>{{ request.user.username }}</strong>
+    </p>
+
+    <hr>
+
+    <h2>Management</h2>
+
+    {% for article in pending_articles %}
+
+    <div class="article-card">
+
+        <div class="article-info">
+
+            <h3>
+                {{ article.title }}
+            </h3>
+
+            <p>
+                Müəllif:
+                <strong>{{ article.author.username }}</strong>
+            </p>
+
+            <p>
+                Kateqoriya:
+                <strong>{{ article.category.name }}</strong>
+            </p>
+
+            <p>
+                Status:
+
+                {% if article.is_published %}
+                    <span class="status active">
+                        Aktiv
+                    </span>
+                {% else %}
+                    <span class="status inactive">
+                        Deaktiv
+                    </span>
+                {% endif %}
+            </p>
+
+        </div>
+
+        <div class="article-actions">
+
+            <a
+                href="{% url 'article_detail' article.id %}"
+                class="btn btn-view"
+            >
+                Məqaləyə bax
+            </a>
+
+            <form
+                method="post"
+                action="{% url 'toggle_article_publish' article.id %}"
+            >
+                {% csrf_token %}
+
+                {% if article.is_published %}
+
+                    <button
+                        type="submit"
+                        class="btn btn-deactivate"
+                    >
+                        Deaktiv et
+                    </button>
+
+                {% else %}
+
+                    <button
+                        type="submit"
+                        class="btn btn-activate"
+                    >
+                        Aktiv et
+                    </button>
+
+                {% endif %}
+
+            </form>
+
+        </div>
+
+    </div>
+
+    {% empty %}
+
+    <p>Məqalə yoxdur.</p>
+
+    {% endfor %}
+
+    <p>
+        <a href="{% url 'home' %}">
+            Back to Home
+        </a>
+    </p>
+
+</body>
+</html>

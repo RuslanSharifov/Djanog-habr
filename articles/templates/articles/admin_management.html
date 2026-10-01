@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Admins</title>
+</head>
+<body>
+
+    <h1>Manage Admins</h1>
+
+    <p>
+        Only Super Admin can manage Admin users.
+    </p>
+
+    <hr>
+
+    {% for item in user_data %}
+
+    <div>
+        <strong>{{ item.user.username }}</strong>
+
+        {% if item.user.is_superuser %}
+
+            <span>— Super Admin</span>
+
+        {% elif item.is_admin %}
+
+            <span>— Admin</span>
+
+            <form
+                method="post"
+                action="{% url 'remove_admin' item.user.id %}"
+                style="display:inline;"
+            >
+                {% csrf_token %}
+
+                <button type="submit">
+                    Remove Admin
+                </button>
+            </form>
+
+        {% else %}
+
+            <span>— User</span>
+
+            <form
+                method="post"
+                action="{% url 'make_admin' item.user.id %}"
+                style="display:inline;"
+            >
+                {% csrf_token %}
+
+                <button type="submit">
+                    Make Admin
+                </button>
+            </form>
+
+        {% endif %}
+    </div>
+
+    <hr>
+
+{% empty %}
+
+    <p>No users found.</p>
+
+{% endfor %}
+    <p>
+        <a href="{% url 'management' %}">
+            Back to Admin Panel
+        </a>
+    </p>
+
+</body>
+</html>

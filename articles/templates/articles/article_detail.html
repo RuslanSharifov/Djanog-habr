@@ -1,27 +1,317 @@
-{% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="az">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Article - DjangoHabr</title>
-    <link rel="stylesheet" href="{% static 'css/article_detail.css' %}">
+
+    <title>{{ article.title }}</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f3f4f6;
+            color: #111827;
+        }
+
+        .page {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .back {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 20px;
+            color: #4b5563;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .back:hover {
+            color: #111827;
+        }
+
+        .article-card {
+            overflow: hidden;
+            background: white;
+            border-radius: 18px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+        }
+
+        .article-image {
+            width: 100%;
+            max-height: 520px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .article-content {
+            padding: 40px;
+        }
+
+        .category {
+            display: inline-block;
+            margin-bottom: 16px;
+            padding: 7px 13px;
+            border-radius: 20px;
+            background: #eef2ff;
+            color: #4338ca;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .title {
+            margin: 0 0 15px;
+            font-size: 42px;
+            line-height: 1.2;
+            color: #111827;
+        }
+
+        .meta {
+            margin-bottom: 30px;
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .article-text {
+            color: #374151;
+            font-size: 18px;
+            line-height: 1.85;
+            white-space: pre-line;
+        }
+
+        .actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 22px 40px 30px;
+            border-top: 1px solid #e5e7eb;
+            flex-wrap: wrap;
+        }
+
+        .action-form {
+            margin: 0;
+        }
+
+        .action-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-width: 110px;
+            height: 44px;
+            padding: 0 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 9px;
+            background: white;
+            color: #374151;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .action-button:hover {
+            background: #f9fafb;
+            transform: translateY(-1px);
+        }
+
+        .action-button svg {
+            width: 20px;
+            height: 20px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .like-button.active {
+            color: #2563eb;
+            border-color: #2563eb;
+            background: #eff6ff;
+        }
+
+        .dislike-button.active {
+            color: #dc2626;
+            border-color: #dc2626;
+            background: #fef2f2;
+        }
+
+        .favorite-button.active {
+            color: #f59e0b;
+            border-color: #f59e0b;
+            background: #fffbeb;
+        }
+
+        .count {
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+        @media (max-width: 700px) {
+            .page {
+                margin: 20px auto;
+                padding: 0 12px;
+            }
+
+            .article-content {
+                padding: 25px;
+            }
+
+            .title {
+                font-size: 30px;
+            }
+
+            .article-text {
+                font-size: 16px;
+            }
+
+            .actions {
+                padding: 20px 25px 25px;
+            }
+
+            .action-button {
+                flex: 1;
+            }
+        }
+    </style>
 </head>
+
 <body>
-<main class="page-container">
-    <a class="back-link" href="{% url 'home' %}">← Back to articles</a>
-    <section class="article-detail">
-        <div class="article-actions">
-            <form method="post" action="{% url 'article_like' article.id %}">
-                {% csrf_token %}
-                <button type="submit" class="action-button like-button">❤️ Like</button>
-            </form>
-            <form method="post" action="{% url 'article_dislike' article.id %}">
-                {% csrf_token %}
-                <button type="submit" class="action-button dislike-button">👎 Dislike</button>
-            </form>
+
+<div class="page">
+
+    <a href="{% url 'home' %}" class="back">
+        ← Geri qayıt
+    </a>
+
+    <article class="article-card">
+
+        {% if article.image %}
+            <img
+                src="{{ article.image.url }}"
+                alt="{{ article.title }}"
+                class="article-image"
+            >
+        {% endif %}
+
+        <div class="article-content">
+
+            <div class="category">
+                {{ article.category.name }}
+            </div>
+
+            <h1 class="title">
+                {{ article.title }}
+            </h1>
+
+            <div class="meta">
+                Müəllif:
+                <strong>{{ article.author.username }}</strong>
+                ·
+                {{ article.created_at|date:"d.m.Y H:i" }}
+            </div>
+
+            <div class="article-text">
+                {{ article.text }}
+            </div>
+
         </div>
-    </section>
-</main>
+
+        <div class="actions">
+
+            <!-- LIKE -->
+            <form
+                method="post"
+                action="{% url 'article_like' article.id %}"
+                class="action-form"
+            >
+                {% csrf_token %}
+
+                <button
+                    type="submit"
+                    class="action-button like-button {% if is_liked %}active{% endif %}"
+                >
+                    <svg viewBox="0 0 24 24">
+                        <path d="M7 10v10"></path>
+                        <path d="M4 10h3v10H4z"></path>
+                        <path d="M7 10l4-8c.3-.6 1-.9 1.6-.6.8.3 1.2 1.2.9 2L12 10h6.5c1.1 0 1.9 1 1.7 2.1l-1.2 6A2.3 2.3 0 0 1 16.7 20H7"></path>
+                    </svg>
+
+                    Like
+
+                    <span class="count">
+                        {{ like_count }}
+                    </span>
+                </button>
+            </form>
+
+
+            <!-- DISLIKE -->
+            <form
+                method="post"
+                action="{% url 'article_dislike' article.id %}"
+                class="action-form"
+            >
+                {% csrf_token %}
+
+                <button
+                    type="submit"
+                    class="action-button dislike-button {% if is_disliked %}active{% endif %}"
+                >
+                    <svg viewBox="0 0 24 24">
+                        <path d="M7 14V4"></path>
+                        <path d="M4 14h3V4H4z"></path>
+                        <path d="M7 14l4 8c.3.6 1 .9 1.6.6.8-.3 1.2-1.2.9-2L12 14h6.5c1.1 0 1.9-1 1.7-2.1l-1.2-6A2.3 2.3 0 0 0 16.7 4H7"></path>
+                    </svg>
+
+                    Dislike
+
+                    <span class="count">
+                        {{ dislike_count }}
+                    </span>
+                </button>
+            </form>
+
+
+            <!-- FAVORITE -->
+            <form
+                method="post"
+                action="{% url 'article_favorite' article.id %}"
+                class="action-form"
+            >
+                {% csrf_token %}
+
+                <button
+                    type="submit"
+                    class="action-button favorite-button {% if is_favorite %}active{% endif %}"
+                >
+                    <svg viewBox="0 0 24 24">
+                        <path d="M20 12.5c0 5-8 9-8 9s-8-4-8-9V5.8A2.8 2.8 0 0 1 6.8 3c1.8 0 3.2 1 5.2 3 2-2 3.4-3 5.2-3A2.8 2.8 0 0 1 20 5.8v6.7z"></path>
+                    </svg>
+
+                    Favorite
+
+                    <span class="count">
+                        {{ favorite_count }}
+                    </span>
+                </button>
+                </button>
+            </form>
+
+        </div>
+
+    </article>
+
+</div>
+
 </body>
 </html>

@@ -40,9 +40,11 @@
             </a>
 
             {% if user.is_authenticated %}
-                <a href="{% url 'favorites' %}">
-                    Favorites
-                </a>
+                {% if user.is_superuser or user.groups.all %}
+                    <a href="{% url 'management' %}">
+                        Admin Panel
+                    </a>
+                {% endif %}
             {% endif %}
 
         </nav>
@@ -130,6 +132,7 @@
             <div class="section-header">
 
                 <div>
+
                     <span class="section-label">
                         LATEST
                     </span>
@@ -137,6 +140,7 @@
                     <h2>
                         Latest articles
                     </h2>
+
                 </div>
 
                 <a href="{% url 'home' %}">
@@ -153,8 +157,10 @@
 
                     {% if article.image %}
 
-                        <a href="{% url 'article_detail' article.id %}"
-                           class="article-image">
+                        <a
+                            href="{% url 'article_detail' article.id %}"
+                            class="article-image"
+                        >
 
                             <img
                                 src="{{ article.image.url }}"
@@ -171,11 +177,11 @@
 
                         <div class="article-meta">
 
-                            <a href="{% url 'category_articles' article.category.id %}"
-                               class="category">
-
+                            <a
+                                href="{% url 'category_articles' article.category.id %}"
+                                class="category"
+                            >
                                 {{ article.category.name }}
-
                             </a>
 
                             <span class="date">
@@ -195,69 +201,56 @@
 
 
                         <p class="article-excerpt">
-
                             {{ article.text|truncatewords:30 }}
-
                         </p>
 
 
                         <div class="article-footer">
 
 
-                        {% if article.author %}
+                            {% if article.author %}
 
-                            <a
-                                href="{% url 'author_articles' article.author.id %}"
-                                class="author"
-                            >
+                                <a
+                                    href="{% url 'author_articles' article.author.id %}"
+                                    class="author"
+                                >
 
-                                <div class="author-avatar">
-                                    {{ article.author.username|first|upper }}
-                                </div>
+                                    <div class="author-avatar">
+                                        {{ article.author.username|first|upper }}
+                                    </div>
 
-                                <span>
-                                    {{ article.author.username }}
-                                </span>
+                                    <span>
+                                        {{ article.author.username }}
+                                    </span>
 
-                            </a>
+                                </a>
 
-                        {% else %}
+                            {% else %}
 
-                            <div class="author">
-                                <div class="author-avatar">
-                                    ?
-                                </div>
+                                <div class="author">
+
+                                    <div class="author-avatar">
+                                        ?
+                                    </div>
 
                                     <span>
                                         Unknown author
                                     </span>
-                                 </div>
+
+                                </div>
 
                             {% endif %}
-
-
-                            <div class="article-stats">
-
-                                <span>
-                                    ♡
-                                </span>
-
-                                <span>
-                                    ★
-                                </span>
-
-                            </div>
-
-
                         </div>
 
 
                     </div>
 
+
                 </article>
 
 
             {% empty %}
+
 
                 <div class="empty-state">
 
@@ -285,10 +278,11 @@
 
                 </div>
 
+
             {% endfor %}
 
-        </section>
 
+        </section>
 
 
         <!-- SIDEBAR -->
@@ -343,7 +337,6 @@
                 </div>
 
             </div>
-
 
 
             <!-- POPULAR -->
@@ -408,6 +401,7 @@
     <div class="footer-inner">
 
         <div>
+
             <strong>
                 DjangoHabr
             </strong>
@@ -415,6 +409,7 @@
             <p>
                 A community for developers.
             </p>
+
         </div>
 
 
@@ -441,6 +436,7 @@
     </div>
 
 </footer>
+
 
 </body>
 </html>

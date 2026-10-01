@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.db.models import Avg
 
 from .forms import RegisterForm, ArticleForm
@@ -11,6 +12,13 @@ from .models import (
     Like,
     Dislike
 )
+
+from .decorators import (
+    admin_required,
+    super_admin_required,
+    get_admin_group
+)
+
 
 
 def register(request):
@@ -55,11 +63,88 @@ def user_logout(request):
     return redirect('login')
 
 
+@admin_required
+def management(request):
+    articles = Article.objects.filter(
+        author__isnull=False
+    ).select_related(
+        'author',
+        'category'
+    ).order_by('-created_at')
+
+    users = User.objects.all().order_by('username')
+
+    return render(
+        request,
+        'articles/management.html',
+        {
+            'articles': articles,
+            'users': users,
+        }
+    )
+
+
+@super_admin_required
+def admin_management(request):
+    users = User.objects.all().order_by(
+        'username'
+    )
+
+    admin_group = get_admin_group()
+
+    user_data = []
+
+    for user in users:
+        user_data.append({
+            'user': user,
+            'is_admin': admin_group in user.groups.all(),
+        })
+
+    return render(request, 'articles/admin_management.html', {
+        'user_data': user_data,
+    })
+
+
+@super_admin_required
+def make_admin(request, user_id):
+    user = get_object_or_404(
+        User,
+        id=user_id
+    )
+
+    if user.is_superuser:
+        return redirect('admin_management')
+
+    admin_group = get_admin_group()
+
+    user.groups.add(admin_group)
+
+    return redirect('admin_management')
+
+
+@super_admin_required
+def remove_admin(request, user_id):
+    user = get_object_or_404(
+        User,
+        id=user_id
+    )
+
+    if user.is_superuser:
+        return redirect('admin_management')
+
+    admin_group = get_admin_group()
+
+    user.groups.remove(admin_group)
+
+    return redirect('admin_management')
+
+
 def home(request):
     articles = Article.objects.filter(
         is_published=True
     ).select_related(
-        'category'
+        'category',
+        'author'
     ).order_by('-created_at')
 
     categories = Category.objects.all()
@@ -70,26 +155,45 @@ def home(request):
         average_rating=Avg('rating__value')
     ).filter(
         average_rating__gte=4
-    ).order_by(
-        '-average_rating'
-    )[:5]
+    ).order_by('-average_rating')[:5]
+
+    for article in articles:
+        article.like_count = Like.objects.filter(
+            article=article
+        ).count()
+
+        article.dislike_count = Dislike.objects.filter(
+            article=article
+        ).count()
+
+        article.favorite_count = Favorite.objects.filter(
+            article=article
+        ).count()
+
+        article.is_liked = False
+        article.is_disliked = False
+        article.is_favorite = False
+
+        if request.user.is_authenticated:
+            article.is_liked = Like.objects.filter(
+                user=request.user,
+                article=article
+            ).exists()
+
+            article.is_disliked = Dislike.objects.filter(
+                user=request.user,
+                article=article
+            ).exists()
+
+            article.is_favorite = Favorite.objects.filter(
+                user=request.user,
+                article=article
+            ).exists()
 
     return render(request, 'articles/home.html', {
         'articles': articles,
         'categories': categories,
         'popular_articles': popular_articles,
-    })
-
-
-def article_detail(request, article_id):
-    article = get_object_or_404(
-        Article,
-        id=article_id,
-        is_published=True
-    )
-
-    return render(request, 'articles/article_detail.html', {
-        'article': article
     })
 
 
@@ -231,22 +335,62 @@ def author_articles(request, author_id):
 
 
 @login_required
-def favorites(request):
-    favorites = Favorite.objects.filter(
-        user=request.user,
-        article__is_published=True
-    ).select_related('article')
+def article_detail(request, article_id):
+    article = Article.objects.filter(
+        id=article_id
+    ).select_related(
+        'author',
+        'category'
+    ).first()
 
-    return render(request, 'articles/favorites.html', {
-        'favorites': favorites
+    if (
+        article is None
+        or (
+            not article.is_published
+            and not (
+                request.user.is_superuser
+                or request.user.groups.filter(name='Admin').exists()
+                or article.author_id == request.user.id
+            )
+        )
+    ):
+        return render(request, 'articles/article_not_found.html')
+
+    is_liked = Like.objects.filter(
+        user=request.user,
+        article=article
+    ).exists()
+
+    is_disliked = Dislike.objects.filter(
+        user=request.user,
+        article=article
+    ).exists()
+
+    is_favorite = Favorite.objects.filter(
+        user=request.user,
+        article=article
+    ).exists()
+
+    like_count = Like.objects.filter(article=article).count()
+    dislike_count = Dislike.objects.filter(article=article).count()
+    favorite_count = Favorite.objects.filter(article=article).count()
+
+    return render(request, 'articles/article_detail.html', {
+        'article': article,
+        'is_liked': is_liked,
+        'is_disliked': is_disliked,
+        'is_favorite': is_favorite,
+        'like_count': like_count,
+        'dislike_count': dislike_count,
+        'favorite_count': favorite_count,
     })
+
 
 @login_required
 def article_like(request, article_id):
     article = get_object_or_404(
         Article,
-        id=article_id,
-        is_published=True
+        id=article_id
     )
 
     Like.objects.get_or_create(
@@ -259,15 +403,20 @@ def article_like(request, article_id):
         article=article
     ).delete()
 
-    return redirect('article_detail', article_id)
+    if request.POST.get('next') == 'home':
+        return redirect('home')
+
+    return redirect(
+        'article_detail',
+        article_id=article_id
+    )
 
 
 @login_required
 def article_dislike(request, article_id):
     article = get_object_or_404(
         Article,
-        id=article_id,
-        is_published=True
+        id=article_id
     )
 
     Dislike.objects.get_or_create(
@@ -280,4 +429,73 @@ def article_dislike(request, article_id):
         article=article
     ).delete()
 
-    return redirect('article_detail', article_id)
+    if request.POST.get('next') == 'home':
+        return redirect('home')
+
+    return redirect(
+        'article_detail',
+        article_id=article_id
+    )
+
+
+@login_required
+def article_favorite(request, article_id):
+    article = get_object_or_404(
+        Article,
+        id=article_id
+    )
+
+    favorite = Favorite.objects.filter(
+        user=request.user,
+        article=article
+    ).first()
+
+    if favorite:
+        favorite.delete()
+    else:
+        Favorite.objects.create(
+            user=request.user,
+            article=article
+        )
+
+    if request.POST.get('next') == 'home':
+        return redirect('home')
+
+    return redirect(
+        'article_detail',
+        article_id=article_id
+    )
+
+
+@login_required
+def favorites(request):
+    favorites = Favorite.objects.filter(
+        user=request.user,
+        article__is_published=True
+    ).select_related(
+        'article',
+        'article__author',
+        'article__category'
+    ).order_by('-id')
+
+    return render(
+        request,
+        'articles/favorites.html',
+        {
+            'favorites': favorites
+        }
+    )
+
+
+@login_required
+@admin_required
+def toggle_article_publish(request, article_id):
+    article = get_object_or_404(
+        Article,
+        id=article_id
+    )
+
+    article.is_published = not article.is_published
+    article.save(update_fields=['is_published', 'updated_at'])
+
+    return redirect('management')
